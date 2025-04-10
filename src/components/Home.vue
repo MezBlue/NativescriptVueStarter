@@ -1,70 +1,4 @@
-<script setup>
-import { ref, onMounted, onUnmounted, $navigateTo } from 'nativescript-vue';
-import Feed from './Feed.vue';
-import Profile from './Profile.vue';
-import Explore from './Explore.vue';
-import Messages from './Messages.vue';
-
-// Track the active tab
-const activeTab = ref('feed');
-
-// Control visibility of create menu and animation states
-const showCreateMenu = ref(false);
-const menuClosing = ref(false);
-
-// Mock data for user
-const currentUser = ref({
-  username: 'user123',
-  profileImage: '~/assets/profile.png',
-  postsCount: 42,
-  followersCount: 1024,
-  followingCount: 365
-});
-
-function navigateToProfile() {
-  $navigateTo(Profile, { 
-    props: { userId: currentUser.value.username } 
-  });
-}
-
-// Toggle create menu visibility with animations
-function toggleCreateMenu() {
-  if (showCreateMenu.value) {
-    // Start closing animation
-    menuClosing.value = true;
-    setTimeout(() => {
-      showCreateMenu.value = false;
-      menuClosing.value = false;
-    }, 300); // Match animation duration
-  } else {
-    showCreateMenu.value = true;
-  }
-}
-
-// Handle menu option selection
-function handleMenuOption(option) {
-  console.log(`Selected option: ${option}`);
-  // Handle different options based on selection
-  switch(option) {
-    case 'profile':
-      activeTab.value = 'profile';
-      break;
-    case 'home':
-      activeTab.value = 'feed';
-      break;
-    // Add more cases as needed
-  }
-}
-
-onMounted(() => {
-  console.log('LandmarkNative mounted');
-});
-
-onUnmounted(() => {
-  console.log('LandmarkNative unmounted');
-});
-</script>
-
+<!--src/components/Home.vue-->
 <template>
   <Frame>
     <Page actionBarHidden="true">
@@ -155,6 +89,73 @@ onUnmounted(() => {
     </Page>
   </Frame>
 </template>
+
+<script setup>
+import { ref, onMounted, onUnmounted, $navigateTo } from 'nativescript-vue';
+import Feed from './Feed.vue';
+import Profile from './Profile.vue';
+import Explore from './Explore.vue';
+import Messages from './Messages.vue';
+
+// Track the active tab
+const activeTab = ref('feed');
+
+// Control visibility of create menu and animation states
+const showCreateMenu = ref(false);
+const menuClosing = ref(false);
+
+// Mock data for user
+const currentUser = ref({
+  username: 'user123',
+  profileImage: '~/assets/profile.png',
+  postsCount: 42,
+  followersCount: 1024,
+  followingCount: 365
+});
+
+function navigateToProfile() {
+  $navigateTo(Profile, { 
+    props: { userId: currentUser.value.username } 
+  });
+}
+
+// Toggle create menu visibility with animations
+function toggleCreateMenu() {
+  if (showCreateMenu.value) {
+    // Start closing animation
+    menuClosing.value = true;
+    setTimeout(() => {
+      showCreateMenu.value = false;
+      menuClosing.value = false;
+    }, 300); // Match animation duration
+  } else {
+    showCreateMenu.value = true;
+  }
+}
+
+// Handle menu option selection
+function handleMenuOption(option) {
+  console.log(`Selected option: ${option}`);
+  // Handle different options based on selection
+  switch(option) {
+    case 'profile':
+      activeTab.value = 'profile';
+      break;
+    case 'home':
+      activeTab.value = 'feed';
+      break;
+    // Add more cases as needed
+  }
+}
+
+onMounted(() => {
+  console.log('LandmarkNative mounted');
+});
+
+onUnmounted(() => {
+  console.log('LandmarkNative unmounted');
+});
+</script>
 
 <style>
 .active-tab {
