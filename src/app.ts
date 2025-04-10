@@ -12,8 +12,32 @@ const app = createApp(Home);
 // Register SwiftUI components
 declare const SampleViewProvider: any
 declare const MapKitViewProvider: any
-registerSwiftUI('sampleView', (view) => new UIDataDriver(SampleViewProvider.alloc().init(), view))
-registerSwiftUI('mapKitView', (view) => new UIDataDriver(MapKitViewProvider.alloc().init(), view))
+
+// Register the sample view if available
+try {
+  if (typeof SampleViewProvider !== 'undefined') {
+    console.log('Registering SampleViewProvider with SwiftUI');
+    registerSwiftUI('sampleView', (view) => new UIDataDriver(SampleViewProvider.alloc().init(), view));
+  } else {
+    console.log('SampleViewProvider not found');
+  }
+} catch (error) {
+  console.error('Error registering SampleViewProvider:', error);
+}
+
+// Register the MapKit view if available
+try {
+  if (typeof MapKitViewProvider !== 'undefined') {
+    console.log('Registering MapKitViewProvider with SwiftUI');
+    registerSwiftUI('mapKitView', (view) => new UIDataDriver(MapKitViewProvider.alloc().init(), view));
+  } else {
+    console.error('MapKitViewProvider not found in global scope');
+  }
+} catch (error) {
+  console.error('Error registering MapKitViewProvider:', error);
+}
+
+// Register the SwiftUIView element globally
 registerElement('SwiftUIView', () => SwiftUI)
 
 
