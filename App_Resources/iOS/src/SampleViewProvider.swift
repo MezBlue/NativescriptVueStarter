@@ -16,17 +16,35 @@ class SampleViewProvider: UIViewController, SwiftUIProvider {
   public override func viewDidLoad() {
     super.viewDidLoad()
     setupSwiftUIView(content: swiftUIView)
+    registerObservers()
   }
 
   // MARK: PRIVATE
 
   private var swiftUIView = SampleView()
 
-  /// Receive data from NativeScript
-  func updateData(data: NSDictionary) {
-      // can be empty
+  private func registerObservers() {
+    swiftUIView.props.incrementCount = {
+      let count = self.swiftUIView.props.count + 1
+      // update swiftUI view
+      self.swiftUIView.props.count = count
+      // notify nativescript
+      self.onEvent?(["count": count])
+    }
   }
 
-  /// Allow sending of data to NativeScript
-  var onEvent: ((NSDictionary) -> ())?
+  // MARK: API
+
+  /// Receive data from NativeScript
+  func updateData(data: NSDictionary) {
+    if let count = data.value(forKey: "count") as? Int {
+      // update swiftUI view
+      swiftUIView.props.count = count
+      // notify nativescript
+      self.onEvent?(["count": count])
+    }
+  }
+
+  /// Send data to NativeScript
+  var onEvent: ((NSDictionary) -> Void)?
 }

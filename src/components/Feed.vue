@@ -2,7 +2,7 @@
   <GridLayout rows="*">
     <ScrollView>
       <StackLayout>
-        <Label text="Feed" />
+        <Label text="Feed2" />
       </StackLayout>
     </ScrollView>
   </GridLayout>
