@@ -1,11 +1,17 @@
-//App_Resources/iOS/src/MapKitViewProvider.swift
+// App_Resources/iOS/src/MapKitViewProvider.swift
 import SwiftUI
 import MapKit
 
 @objc
 class MapKitViewProvider: UIViewController, SwiftUIProvider {
     
-    // MARK: INIT
+    // Shared view model for the map.
+    private var viewModel = MapKitViewModel()
+    
+    // Create the SwiftUI view with type erasure so that the result type is AnyView.
+    private lazy var mapKitView: AnyView = {
+        AnyView(MapKitView().environmentObject(viewModel))
+    }()
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -19,22 +25,13 @@ class MapKitViewProvider: UIViewController, SwiftUIProvider {
     public override func viewDidLoad() {
         super.viewDidLoad()
         print("MapKitViewProvider viewDidLoad")
+        // Pass the AnyView to the plugin's setup function.
         setupSwiftUIView(content: mapKitView)
     }
     
-    public override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        print("MapKitViewProvider viewDidAppear")
-    }
-    
-    // MARK: PRIVATE
-    
-    private var mapKitView = MapKitView()
-    
-    /// Receive data from NativeScript
+    // This method is called from NativeScript (JavaScript) with a JSON dictionary.
     func updateData(data: NSDictionary) {
         print("MapKitViewProvider received data: \(data)")
-        
         if let action = data["action"] as? String {
             switch action {
             case "addPin":
@@ -42,40 +39,33 @@ class MapKitViewProvider: UIViewController, SwiftUIProvider {
                    let longitude = data["longitude"] as? Double,
                    let title = data["title"] as? String {
                     print("Provider: Adding pin at \(title) (\(latitude), \(longitude))")
-                    // Use the main thread for UI updates
                     DispatchQueue.main.async {
-                        self.mapKitView.addPin(latitude: latitude, longitude: longitude, title: title)
+                        self.viewModel.addPin(latitude: latitude, longitude: longitude, title: title)
                     }
                 } else {
                     print("Provider: Missing data for addPin action")
                 }
-                
             case "centerOn":
                 if let latitude = data["latitude"] as? Double,
                    let longitude = data["longitude"] as? Double {
                     print("Provider: Centering map on (\(latitude), \(longitude))")
-                    // Use the main thread for UI updates
                     DispatchQueue.main.async {
-                        self.mapKitView.centerOn(latitude: latitude, longitude: longitude)
+                        self.viewModel.centerOn(latitude: latitude, longitude: longitude)
                     }
                 } else {
                     print("Provider: Missing data for centerOn action")
                 }
-                
             case "centerOnUser":
                 print("Provider: Centering map on user location")
-                // Use the main thread for UI updates
                 DispatchQueue.main.async {
-                    self.mapKitView.centerOnUser()
+                    self.viewModel.centerOnUser()
                 }
-                
             default:
                 print("Provider: Unknown action \(action)")
-                break
             }
         }
     }
     
-    /// Allow sending of data to NativeScript
+    // Optional callback for sending data back to NativeScript (if needed).
     var onEvent: ((NSDictionary) -> ())?
 }

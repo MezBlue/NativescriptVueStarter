@@ -1,20 +1,33 @@
+<!-- src/components/Explore.vue -->
 <template>
   <GridLayout rows="auto, *">
-    <GridLayout row="0" columns="*, *, *" class="p-2 bg-white border-b border-gray-300">
-      <Button col="0" text="Add Pin" @tap="addRandomPin" class="btn btn-primary text-sm p-2" />
-      <Button col="1" text="Center Map" @tap="centerMap" class="btn btn-primary text-sm p-2" />
-      <Button col="2" text="Find Me" @tap="centerOnUser" class="btn btn-primary text-sm p-2" />
+    <GridLayout row="0" columns="*,*,*" class="p-2 bg-white border-b border-gray-300">
+      <Button
+        col="0"
+        text="Add Pin"
+        @tap="addRandomPin"
+        class="btn btn-primary text-sm p-2" />
+      <Button
+        col="1"
+        text="Center Map"
+        @tap="centerMap"
+        class="btn btn-primary text-sm p-2" />
+      <Button
+        col="2"
+        text="Find Me"
+        @tap="centerOnUser"
+        class="btn btn-primary text-sm p-2" />
     </GridLayout>
     
     <GridLayout row="1">
-      <!-- embed the MapKit SwiftUI view with a ref -->
+      <!-- Embed the SwiftUI MapKit view using swiftId="mapKitView" and a ref -->
       <SwiftUIView ref="mapView" swiftId="mapKitView" height="100%" />
     </GridLayout>
   </GridLayout>
 </template>
 
 <script lang="ts">
-export default{
+export default {
   name: 'Explore',
   data() {
     return {
@@ -27,86 +40,61 @@ export default{
       ]
     };
   },
-  
   methods: {
     addRandomPin() {
-      // Get a random location from our predefined list
       const randomIndex = Math.floor(Math.random() * this.locations.length);
       const location = this.locations[randomIndex];
-      
       console.log('Adding pin at:', location.title);
       
-      // Use the direct approach with the SwiftUI registry
-      try {
-        // Access the SwiftUI registry directly
-        const { SwiftUIManager } = require('@nativescript/swift-ui');
-        
-        // Create the data to send
-        const data = {
-          action: 'addPin',
-          latitude: location.lat,
-          longitude: location.lng,
-          title: location.title
-        };
-        
-        // Send the data to the SwiftUI view
-        this.sendDataToSwiftUI(data);
-      } catch (error) {
-        console.error('Error adding pin:', error);
-      }
+      const data = {
+        action: 'addPin',
+        latitude: location.lat,
+        longitude: location.lng,
+        title: location.title
+      };
+      this.sendDataToSwiftUI(data);
     },
-    
     centerMap() {
       console.log('Centering map on San Francisco');
-      
-      // Create the data to send
       const data = {
         action: 'centerOn',
         latitude: 37.7749,
         longitude: -122.4194
       };
-      
-      // Send the data to the SwiftUI view
       this.sendDataToSwiftUI(data);
     },
-    
     centerOnUser() {
       console.log('Centering map on user location');
-      
-      // Create the data to send
       const data = {
         action: 'centerOnUser'
       };
-      
-      // Send the data to the SwiftUI view
       this.sendDataToSwiftUI(data);
     },
-    
-    // Helper method to send data to the SwiftUI view
+    // Method to call updateData on the SwiftUI view.
     sendDataToSwiftUI(data: any) {
       console.log('Sending data to SwiftUI:', data);
-      
-      // Try multiple approaches to ensure the data gets through
-      
-      // Approach 1: Use $refs
       try {
         const mapViewRef = this.$refs.mapView as any;
-        if (mapViewRef && mapViewRef.nativeView) {
-          console.log('Sending data via $refs');
-          mapViewRef.nativeView.data = data;
+        if (mapViewRef && mapViewRef.nativeView && typeof mapViewRef.nativeView.updateData === 'function') {
+          console.log('Sending data via $refs using updateData');
+          mapViewRef.nativeView.updateData(data);
           return;
+        } else {
+          console.error('nativeView or updateData not available on $refs.mapView');
         }
       } catch (error) {
         console.error('Error sending data via $refs:', error);
       }
       
-      // Approach 2: Use direct registry access
+      // Fallback: attempt to locate SwiftUI view in the page hierarchy.
       try {
         const swiftUI = this.findSwiftUIView();
-        if (swiftUI) {
-          console.log('Sending data via findSwiftUIView');
-          swiftUI.data = data;
+        if (swiftUI && typeof swiftUI.updateData === 'function') {
+          console.log('Sending data via findSwiftUIView using updateData');
+          swiftUI.updateData(data);
           return;
+        } else {
+          console.error('updateData not found via findSwiftUIView');
         }
       } catch (error) {
         console.error('Error sending data via findSwiftUIView:', error);
@@ -114,36 +102,27 @@ export default{
       
       console.error('Failed to send data to SwiftUI view');
     },
-    
     findSwiftUIView() {
-      // Simplest approach: use the $refs to get the SwiftUI view
       try {
         const mapViewRef = this.$refs.mapView as any;
         if (mapViewRef && mapViewRef.nativeView) {
-          console.log('Found SwiftUI view through $refs');
+          console.log('Found SwiftUI view via $refs');
           return mapViewRef.nativeView;
         }
       } catch (error) {
-        console.error('Error accessing map view through $refs:', error);
+        console.error('Error accessing map view via $refs:', error);
       }
       
-      // If $refs doesn't work, try a direct approach using the Frame
       try {
         const { Frame } = require('@nativescript/core');
         const page = Frame.topmost().currentPage;
-        
         if (page) {
-          console.log('Searching for SwiftUI view in page');
-          
-          // Simple function to find the SwiftUI view by ID
+          console.log('Searching for SwiftUI view in page hierarchy');
           const findView = (parent: any): any => {
-            // Check if this is our view
             if (parent && parent.swiftId === 'mapKitView') {
               return parent;
             }
-            
-            // Check children
-            if (parent && parent.getChildrenCount && typeof parent.getChildrenCount === 'function') {
+            if (parent && typeof parent.getChildrenCount === 'function') {
               const count = parent.getChildrenCount();
               for (let i = 0; i < count; i++) {
                 const child = parent.getChildAt(i);
@@ -151,21 +130,19 @@ export default{
                 if (result) return result;
               }
             }
-            
             return null;
           };
-          
           const view = findView(page);
           if (view) {
-            console.log('Found SwiftUI view in page hierarchy');
+            console.log('Found SwiftUI view in hierarchy');
             return view;
           }
         }
       } catch (error) {
-        console.error('Error searching for SwiftUI view:', error);
+        console.error('Error searching view hierarchy:', error);
       }
       
-      console.log('Could not find SwiftUI view');
+      console.log('SwiftUI view not found');
       return null;
     }
   }
@@ -178,5 +155,7 @@ export default{
   color: white;
   border-radius: 4;
   margin: 2;
+  padding: 4;
+  font-size: 12px;
 }
 </style>
