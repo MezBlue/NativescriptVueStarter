@@ -14,11 +14,8 @@
 </template>
 
 <script lang="ts">
-import Vue from 'nativescript-vue';
-import { Application, Utils } from '@nativescript/core';
-
-export default Vue.extend({
-  name: 'Discover',
+export default{
+  name: 'Explore',
   data() {
     return {
       locations: [
@@ -172,7 +169,7 @@ export default Vue.extend({
       return null;
     }
   }
-});
+};
 </script>
 
 <style scoped>

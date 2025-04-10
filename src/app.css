@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.font-mgc {
+    font-family: 'MingCute';
+}
+
 ActionBar {
     background-color: #65adf1;
     color: white;

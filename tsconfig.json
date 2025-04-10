@@ -1,26 +1,28 @@
 {
   "compilerOptions": {
     "strict": true,
-    "target": "ES2020",
+    "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
-    "lib": ["dom", "ESNext"],
+    "lib": ["esnext", "WebWorker"],
     "sourceMap": true,
     "noEmitHelpers": true,
     "importHelpers": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["app/*"],
-      "@/*": ["app/*"]
+      "~/*": ["src/*"],
+      "@/*": ["src/*"]
     },
-    "typeRoots": ["types"],
-    "types": ["node"],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "skipLibCheck": true
   },
-  "include": ["app", "types"],
+  "vueCompilerOptions": {
+    "target": 3,
+    "lib": "nativescript-vue"
+  },
+  "include": ["src", "types"],
   "exclude": ["node_modules", "platforms"]
 }
