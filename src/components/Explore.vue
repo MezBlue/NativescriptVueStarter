@@ -1,6 +1,7 @@
 <!-- src/components/Explore.vue -->
 <template>
   <GridLayout rows="auto, *">
+    <!-- Top row: buttons -->
     <GridLayout row="0" columns="*,*,*" class="p-2 bg-white border-b border-gray-300">
       <Button
         col="0"
@@ -19,8 +20,8 @@
         class="btn btn-primary text-sm p-2" />
     </GridLayout>
     
+    <!-- Bottom row: embed the MapKit SwiftUI view -->
     <GridLayout row="1">
-      <!-- Embed the SwiftUI MapKit view using swiftId="mapKitView" and a ref -->
       <SwiftUIView ref="mapView" swiftId="mapKitView" height="100%" />
     </GridLayout>
   </GridLayout>
@@ -31,6 +32,7 @@ export default {
   name: 'Explore',
   data() {
     return {
+      // List of locations (for adding random pins)
       locations: [
         { lat: 40.7128, lng: -74.0060, title: 'New York' },
         { lat: 34.0522, lng: -118.2437, title: 'Los Angeles' },
@@ -43,14 +45,13 @@ export default {
   methods: {
     addRandomPin() {
       const randomIndex = Math.floor(Math.random() * this.locations.length);
-      const location = this.locations[randomIndex];
-      console.log('Adding pin at:', location.title);
-      
+      const loc = this.locations[randomIndex];
+      console.log('Adding pin at:', loc.title);
       const data = {
         action: 'addPin',
-        latitude: location.lat,
-        longitude: location.lng,
-        title: location.title
+        latitude: loc.lat,
+        longitude: loc.lng,
+        title: loc.title
       };
       this.sendDataToSwiftUI(data);
     },
@@ -70,13 +71,12 @@ export default {
       };
       this.sendDataToSwiftUI(data);
     },
-    // Method to call updateData on the SwiftUI view.
+    // Sends data to the native view by calling updateData on the SwiftUI view.
     sendDataToSwiftUI(data: any) {
       console.log('Sending data to SwiftUI:', data);
       try {
         const mapViewRef = this.$refs.mapView as any;
         if (mapViewRef && mapViewRef.nativeView && typeof mapViewRef.nativeView.updateData === 'function') {
-          console.log('Sending data via $refs using updateData');
           mapViewRef.nativeView.updateData(data);
           return;
         } else {
@@ -85,65 +85,7 @@ export default {
       } catch (error) {
         console.error('Error sending data via $refs:', error);
       }
-      
-      // Fallback: attempt to locate SwiftUI view in the page hierarchy.
-      try {
-        const swiftUI = this.findSwiftUIView();
-        if (swiftUI && typeof swiftUI.updateData === 'function') {
-          console.log('Sending data via findSwiftUIView using updateData');
-          swiftUI.updateData(data);
-          return;
-        } else {
-          console.error('updateData not found via findSwiftUIView');
-        }
-      } catch (error) {
-        console.error('Error sending data via findSwiftUIView:', error);
-      }
-      
       console.error('Failed to send data to SwiftUI view');
-    },
-    findSwiftUIView() {
-      try {
-        const mapViewRef = this.$refs.mapView as any;
-        if (mapViewRef && mapViewRef.nativeView) {
-          console.log('Found SwiftUI view via $refs');
-          return mapViewRef.nativeView;
-        }
-      } catch (error) {
-        console.error('Error accessing map view via $refs:', error);
-      }
-      
-      try {
-        const { Frame } = require('@nativescript/core');
-        const page = Frame.topmost().currentPage;
-        if (page) {
-          console.log('Searching for SwiftUI view in page hierarchy');
-          const findView = (parent: any): any => {
-            if (parent && parent.swiftId === 'mapKitView') {
-              return parent;
-            }
-            if (parent && typeof parent.getChildrenCount === 'function') {
-              const count = parent.getChildrenCount();
-              for (let i = 0; i < count; i++) {
-                const child = parent.getChildAt(i);
-                const result = findView(child);
-                if (result) return result;
-              }
-            }
-            return null;
-          };
-          const view = findView(page);
-          if (view) {
-            console.log('Found SwiftUI view in hierarchy');
-            return view;
-          }
-        }
-      } catch (error) {
-        console.error('Error searching view hierarchy:', error);
-      }
-      
-      console.log('SwiftUI view not found');
-      return null;
     }
   }
 };
@@ -151,11 +93,7 @@ export default {
 
 <style scoped>
 .btn {
-  background-color: #4CAF50;
-  color: white;
-  border-radius: 4;
-  margin: 2;
-  padding: 4;
-  font-size: 12px;
+  margin: 4px;
+  padding: 8px;
 }
 </style>
