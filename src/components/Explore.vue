@@ -27,7 +27,7 @@
   </GridLayout>
 </template>
 
-<script lang="ts">
+<script>
 export default {
   name: 'Explore',
   data() {
@@ -72,10 +72,10 @@ export default {
       this.sendDataToSwiftUI(data);
     },
     // Sends data to the native view by calling updateData on the SwiftUI view.
-    sendDataToSwiftUI(data: any) {
+    sendDataToSwiftUI(data) {
       console.log('Sending data to SwiftUI:', data);
       try {
-        const mapViewRef = this.$refs.mapView as any;
+        const mapViewRef = this.$refs.mapView;
         if (mapViewRef && mapViewRef.nativeView && typeof mapViewRef.nativeView.updateData === 'function') {
           mapViewRef.nativeView.updateData(data);
           return;
