@@ -2,7 +2,8 @@ import SwiftUI
 
 @objc(SampleViewProvider)
 class SampleViewProvider: UIViewController, SwiftUIProvider {
-
+  private var swiftUIData = ButtonProps()
+  private var swiftUI: SampleView?
   // MARK: INIT
   
   required init?(coder aDecoder: NSCoder) {
@@ -15,21 +16,16 @@ class SampleViewProvider: UIViewController, SwiftUIProvider {
   
   public override func viewDidLoad() {
     super.viewDidLoad()
-    setupSwiftUIView(content: swiftUIView)
     registerObservers()
   }
   
-  // MARK: PRIVATE
-  
-  private var swiftUIView = SampleView()
-  
   private func registerObservers() {
-    swiftUIView.props.incrementCount = {
-      let count = self.swiftUIView.props.count + 1
+    swiftUIData.incrementCount = {
+      self.swiftUIData.count = self.swiftUIData.count + 1
       // update SwiftUI view
-      self.swiftUIView.props.count = count
+      self.swiftUI?.props = self.swiftUIData
       // notify NativeScript
-      self.onEvent?(["count": count])
+      self.onEvent?(["count": self.swiftUIData.count])
     }
   }
   
@@ -37,11 +33,24 @@ class SampleViewProvider: UIViewController, SwiftUIProvider {
   
   /// Receive data from NativeScript
   func updateData(data: NSDictionary) {
-    if let count = data.value(forKey: "count") as? Int {
-      // update SwiftUI view
-      swiftUIView.props.count = count
-      // notify NativeScript
-      self.onEvent?(["count": count])
+    let enumerator = data.keyEnumerator()
+    while let k = enumerator.nextObject() {
+        let key = k as! String
+        let v = data.object(forKey: key)
+        if (v != nil) {
+          if (key == "count") {
+              swiftUIData.count = v as! Int
+          }
+        }
+    }
+
+    if (self.swiftUI == nil) {
+      self.swiftUI = SampleView(props: swiftUIData)
+      setupSwiftUIView(content: self.swiftUI)
+      registerObservers()
+    } else {
+      // engage data binding right away
+      self.swiftUI?.props = swiftUIData
     }
   }
   

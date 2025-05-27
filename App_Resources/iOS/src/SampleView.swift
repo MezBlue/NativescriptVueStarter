@@ -8,7 +8,7 @@ class ButtonProps: ObservableObject {
 
 struct SampleView: View {
 
-  @ObservedObject var props = ButtonProps()
+  @ObservedObject var props: ButtonProps
 
   var body: some View {
       VStack(alignment: .center, spacing: 0) {
